@@ -8,10 +8,12 @@
     android:layout_gravity="center_horizontal"
     tools:context="com.example.mshifrix.finalprojectapp.MainActivity">
 
+
+
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="300dp"
-        android:layout_height="80dp"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="20dp"
         android:src="@drawable/logoproject" />
@@ -34,9 +36,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="230dp"></LinearLayout>
+
+
     <Button
         android:id="@+id/btnGetCoordinates"
-        android:text="Get Coordinates"
+        android:text="My current location"
         android:layout_marginTop="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

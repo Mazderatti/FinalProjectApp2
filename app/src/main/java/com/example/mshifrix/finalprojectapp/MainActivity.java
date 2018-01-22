@@ -1,32 +1,31 @@
 package com.example.mshifrix.finalprojectapp;
 
 import android.Manifest;
+import android.app.Fragment;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
+
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.mshifrix.finalprojectapp.Fragments.Fragment_First;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.io.FileDescriptor;
-import java.io.PrintWriter;
-import java.util.concurrent.TimeUnit;
+import static com.example.mshifrix.finalprojectapp.R.layout.fragment__first;
+
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -45,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static int FATEST_INTERVAL = 3000; //SEC
     private static int DISPLACEMENT = 10; //METERS
 
+    Fragment frag;
+    FragmentTransaction fragTran;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -68,6 +69,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         txtCoordinates = (TextView) findViewById(R.id.txtCoordinates);
         btnGetCoordinates = (Button) findViewById(R.id.btnGetCoordinates);
         btnLocationUpdates = (Button) findViewById(R.id.btnTrackLocation);
+
+        frag = new Fragment_First();
+        fragTran = getSupportFragmentManager().beginTransaction();
+        fragTran.add(R.id.container, fragment__first);
+        fragTran.commit();
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
@@ -128,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-
     private void displayLocation() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -154,11 +160,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
     }
 
-    private void buildGoogleApiClient() {
+    private synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API).build();
+
+        mGoogleApiClient.connect();
     }
 
     private boolean checkPlayServices() {
