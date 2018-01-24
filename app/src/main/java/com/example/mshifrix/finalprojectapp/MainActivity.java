@@ -1,7 +1,6 @@
 package com.example.mshifrix.finalprojectapp;
 
 import android.Manifest;
-import android.app.Fragment;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -9,14 +8,16 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 
-import android.support.v4.app.FragmentTransaction;
+
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.mshifrix.finalprojectapp.Fragments.Fragment_First;
+
+import com.example.mshifrix.finalprojectapp.pages.MapFragmentApp;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -24,7 +25,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import static com.example.mshifrix.finalprojectapp.R.layout.fragment__first;
+import static com.example.mshifrix.finalprojectapp.R.layout.fragment_map;
 
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
@@ -44,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static int FATEST_INTERVAL = 3000; //SEC
     private static int DISPLACEMENT = 10; //METERS
 
-    Fragment frag;
-    FragmentTransaction fragTran;
+    boolean isPortScreen;
+
+    private MapFragmentApp mapFragment = new MapFragmentApp();
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -66,14 +68,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtCoordinates = (TextView) findViewById(R.id.txtCoordinates);
-        btnGetCoordinates = (Button) findViewById(R.id.btnGetCoordinates);
-        btnLocationUpdates = (Button) findViewById(R.id.btnTrackLocation);
+        isPortScreen = findViewById(R.id.linear_layout_cont) != null;
 
-        frag = new Fragment_First();
-        fragTran = getSupportFragmentManager().beginTransaction();
-        fragTran.add(R.id.container, fragment__first);
-        fragTran.commit();
+        if(isPortScreen){
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.linear_layout_cont, mapFragment, "fp1")
+                    .commit();
+        }
+
+       /* txtCoordinates = (TextView) findViewById(R.id.txtCoordinates);
+        btnGetCoordinates = (Button) findViewById(R.id.btnGetCoordinates);
+        btnLocationUpdates = (Button) findViewById(R.id.btnTrackLocation);*/
 
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -92,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
 
-        btnGetCoordinates.setOnClickListener(new View.OnClickListener() {
+       /* btnGetCoordinates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 displayLocation();
@@ -104,22 +110,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onClick(View view) {
                 tooglePeriodicLocationUpdates();
             }
-        });
+        });*/
 
     }
 
     protected void onStart() {
         super.onStart();
-        if (mGoogleApiClient != null)
+        if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
+            Log.d("mapLog", "mGoogleApiClient.connecting");
+        }
 
     }
 
     @Override
     protected void onStop() {
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        if (mGoogleApiClient != null)
+        if (mGoogleApiClient != null) {
             mGoogleApiClient.disconnect();
+            Log.d("mapLog", "mGoogleApiClient.DISConnecting");
+        }
         super.onStop();
     }
 
@@ -139,15 +149,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("logMap", "Problem with Location Permissions");
             return;
         }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
             double latitude = mLastLocation.getLatitude();
             double longitude = mLastLocation.getLongitude();
-            txtCoordinates.setText(latitude + " / " + longitude);
-        } else
-            txtCoordinates.setText("Couldn't get the location. Make sure location is enable on the device");
+            //txtCoordinates.setText(latitude + " / " + longitude);
+        } else {
+            //txtCoordinates.setText("Couldn't get the location. Make sure location is enable on the device");
+            Log.d("logMap", "Couldn't get the location. Make sure location is enable on the device");
+        }
 
     }
 
@@ -196,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void onConnected(@Nullable Bundle bundle) {
+        Log.d("logMap", "onConnected");
         displayLocation();
         if (mRequestingLocationUpdates)
             startLocationUpdates();
