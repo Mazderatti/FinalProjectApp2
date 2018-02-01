@@ -11,19 +11,17 @@ import android.support.v4.app.ActivityCompat;
 
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
-
+import com.example.mshifrix.finalprojectapp.helpers.PermissionHelper;
 import com.example.mshifrix.finalprojectapp.pages.MapFragmentApp;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 
 import static com.example.mshifrix.finalprojectapp.R.layout.fragment_map;
 
@@ -31,21 +29,22 @@ import static com.example.mshifrix.finalprojectapp.R.layout.fragment_map;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private static final int MY_PERMISSION_REQUEST_CODE = 7171;
+
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 7172;
 
-    private TextView txtCoordinates;
-    private Button btnGetCoordinates, btnLocationUpdates;
     private boolean mRequestingLocationUpdates = false;
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
+    private PermissionHelper permissionHelper;
 
     private static int UPDATE_INTERVAL = 5000; //SEC
-    private static int FATEST_INTERVAL = 3000; //SEC
+    private static int FATEST_INTERVAL = UPDATE_INTERVAL / 2; //SEC
     private static int DISPLACEMENT = 10; //METERS
+    private static final int MY_PERMISSION_REQUEST_CODE = 7171;
 
     boolean isPortScreen;
+    boolean permissionsGranded = false;
 
     private MapFragmentApp mapFragment = new MapFragmentApp();
 
@@ -68,7 +67,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Not need this class now
+        /*permissionHelper = new PermissionHelper(this);
+        permissionHelper.getLocationPermissions();*/
+
+
         isPortScreen = findViewById(R.id.linear_layout_cont) != null;
+
+        SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        supportMapFragment.getMapAsync((OnMapReadyCallback) this);
 
         if(isPortScreen){
             getSupportFragmentManager()
@@ -77,14 +85,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     .commit();
         }
 
+        //not need it
        /* txtCoordinates = (TextView) findViewById(R.id.txtCoordinates);
         btnGetCoordinates = (Button) findViewById(R.id.btnGetCoordinates);
         btnLocationUpdates = (Button) findViewById(R.id.btnTrackLocation);*/
 
-
+        //moved to Helper class
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-
         {
             //Run-time request permission
             ActivityCompat.requestPermissions(this, new String[]{
@@ -98,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
 
+        //not need it
        /* btnGetCoordinates.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,13 +123,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
+    @Override
     protected void onStart() {
         super.onStart();
         if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
             Log.d("mapLog", "mGoogleApiClient.connecting");
         }
-
     }
 
     @Override
@@ -133,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onStop();
     }
 
-    private void tooglePeriodicLocationUpdates() {
+    /*private void tooglePeriodicLocationUpdates() {
         if (!mRequestingLocationUpdates) {
             btnLocationUpdates.setText("Stop location update");
             mRequestingLocationUpdates = true;
@@ -143,10 +152,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mRequestingLocationUpdates = false;
             stopLocationUpdates();
         }
-    }
+    }*/
 
     private void displayLocation() {
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d("logMap", "Problem with Location Permissions");
@@ -182,12 +190,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
             } else {
-                Toast.makeText(getApplicationContext(), "This device is not supported", Toast.LENGTH_LONG).show();
+                Log.i("TAG", "This device is not supported.");
                 finish();
             }
             return false;

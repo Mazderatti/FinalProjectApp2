@@ -4,11 +4,13 @@ package com.example.mshifrix.finalprojectapp.pages;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.mshifrix.finalprojectapp.R;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -20,6 +22,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
  */
 public class MapFragmentApp extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
+    private GoogleApiClient mGoogleApiClient;
     private OnMap mOnMap;
 
     public MapFragmentApp() {
@@ -34,6 +37,8 @@ public class MapFragmentApp extends Fragment implements OnMapReadyCallback {
             mOnMap = (OnMap) context;
         }
     }//onAttach
+
+
 
     @Override
     public void onDetach() {
